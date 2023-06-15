@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <title>Formulário de Produtos</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background-color: #f2f2f2;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        textarea {
+            height: 100px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .product-list {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f2f2f2;
+            border-radius: 5px;
+        }
+
+        .product-list li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Formulário de Produtos</h1>
+
+        <form id="product-form">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" placeholder="Digite o nome do produto" required>
+
+            <label for="descricao">Descrição:</label>
+            <input type="text" id="descricao" name="descricao" placeholder="Digite a descrição do produto" required>
+
+            <label for="preco">Preço:</label>
+            <input type="number" id="preco" name="preco" placeholder="Digite o preço do produto" required>
+
+            <button type="submit">Salvar</button>
+        </form>
+
+        <button id="fetch-button">Buscar Produtos</button>
+
+        <div class="product-list" id="product-list"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const form = document.getElementById('product-form');
+        const fetchButton = document.getElementById('fetch-button');
+        const productList = document.getElementById('product-list');
+
+        // Função para fazer a requisição POST
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const nome = document.getElementById('nome').value;
+            const descricao = document.getElementById('descricao').value;
+            const preco = document.getElementById('preco').value;
+
+            const data = {
+                nome: nome,
+                descricao: descricao,
+                preco: preco
+            };
+
+            axios.post('http://localhost:3000/produtos', data)
+                .then((response) => {
+                    if (response.status === 201) {
+                        alert('Produto salvo com sucesso!');
+                        form.reset();
+                    } else {
+                        alert('Erro ao salvar produto. Por favor, tente novamente.');
+                    }
+                })
+                .catch((error) => {
+                    alert('Erro ao salvar produto. Por favor, tente novamente.');
+                });
+        });
+
+        // Função para fazer a requisição GET
+        fetchButton.addEventListener('click', () => {
+            axios.get('http://localhost:3000/produtos')
+                .then((response) => {
+                    const produtos = response.data;
+                    productList.innerHTML = '';
+
+                    produtos.forEach((produto) => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `Nome: ${produto.nome}, Descrição: ${produto.descricao}, Preço: ${produto.preco}`;
+                        productList.appendChild(listItem);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Erro ao buscar produtos:', error);
+                });
+        });
+    </script>
+
+
+
+
+
+
+
+
+    <script>
+        let newWorker;
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js').then(reg => {
+                reg.addEventListener('updatefound', () => {
+                    // A wild service worker has appeared in reg.installing!
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        // Has network.state changed?
+                        switch (newWorker.state) {
+                            case 'installed':
+                                if (navigator.serviceWorker.controller) {
+                                    // new update available
+                                    showUpdateBar();
+                                }
+                                // No update available
+                                break;
+                        }
+                    });
+                });
+            });
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', function () {
+                if (refreshing) return;
+                window.location.reload();
+                refreshing = true;
+            });
+        }
+    </script>
+
+</body>
+
+</html>
